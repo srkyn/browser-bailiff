@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1
+
+- Expanded README with outsider-focused sections for purpose, checks, risk rules, output fields, files, limitations, and validation.
+- Added MIT license.
+- Added security policy.
+- Added Python packaging metadata and `browser-bailiff` console entry point.
+- Added GitHub Actions CI workflow.
+- Added issue templates for bugs and feature requests.
+
 ## 0.2.0
 
 - Added profile names to audit records and table output.

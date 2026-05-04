@@ -15,7 +15,7 @@ import time
 import zipfile
 
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 # Sample known-malicious extension IDs. Replace or extend this list with real
 # intelligence from your own allow/block lists before using for enforcement.

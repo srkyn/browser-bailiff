@@ -1,19 +1,56 @@
 # Browser Bailiff
 
-Browser Bailiff audits installed Chrome, Edge, and Firefox extensions from the
-command line. It extracts manifest metadata, summarizes permissions, flags stale
-or powerful extensions, and can write JSON results for later review.
+Audit browser extensions before quiet permissions become operational risk.
 
-## Features
+Browser Bailiff is a read-only Python tool for reviewing installed Chrome, Edge,
+and Firefox extensions from the command line.
 
-- Detects Windows, macOS, and Linux browser extension locations.
-- Scans Chrome, Edge, and Firefox profiles separately.
+It extracts manifest metadata, summarizes permissions and host access, flags
+stale or powerful extensions, prints a human-readable docket, and can write JSON
+output for later review.
+
+![Release](https://img.shields.io/github/v/release/srkyn/browser-bailiff?style=flat-square)
+![CI](https://img.shields.io/github/actions/workflow/status/srkyn/browser-bailiff/ci.yml?branch=main&style=flat-square)
+![Python](https://img.shields.io/badge/python-3.8%2B-1f6feb?style=flat-square)
+![License](https://img.shields.io/github/license/srkyn/browser-bailiff?style=flat-square)
+
+## At A Glance
+
+- Read-only audit tool; it does not install, disable, or delete extensions.
+- Scans Chrome, Edge, and Firefox extension directories on Windows, macOS, and Linux.
 - Reads Chromium `manifest.json` files and Firefox `.xpi` archives.
 - Resolves localized Chromium extension names when possible.
-- Reports profile names, permissions, host permissions, content-script matches,
-  optional permissions, update URLs, versions, paths, and age.
+- Reports browser profile, extension ID, version, permissions, host access, update URL, path, and age.
+- Includes content-script host matches and optional permissions in the JSON output.
 - Scores extension risk as `LOW`, `MEDIUM`, or `HIGH` with a finding reason.
-- Sorts the terminal docket by risk and optionally writes structured JSON.
+- Sorts the terminal docket by risk and age.
+- Ships with tests, CI, a security policy, and versioned releases.
+
+## Why It Exists
+
+Browser extensions sit close to sensitive user activity. Some can read or modify
+pages, inspect cookies, communicate with native applications, or manage other
+extensions. Those powers may be legitimate, but they deserve visibility.
+
+Browser Bailiff helps answer:
+
+> Which browser extensions are installed, what can they access, and which ones deserve closer review?
+
+## What It Checks
+
+On Chromium-based browsers:
+
+- Chrome profile extension folders
+- Edge profile extension folders
+- Latest version folder for each extension ID
+- `manifest.json`, localized names, declared permissions, host permissions, content-script matches, and optional permissions
+
+On Firefox:
+
+- Firefox profile extension folders
+- `.xpi` extension archives
+- Extracted extension folders
+- WebExtension manifests and likely legacy non-WebExtension add-ons
 
 ## Usage
 
@@ -26,13 +63,58 @@ python .\browser_bailiff.py --version
 
 Supported browser values are `chrome`, `edge`, `firefox`, and `all`.
 
-## Notes
+## Risk Rules
+
+The auditor marks an extension as `HIGH` when:
+
+- It requests sensitive permissions such as `cookies`, `<all_urls>`, `webRequest`, `nativeMessaging`, `management`, `debugger`, or `webRequestBlocking`.
+- Its extension file or folder appears older than 365 days.
+- It appears to be a legacy Firefox add-on.
+- Its extension ID matches the built-in sample block list.
+
+The auditor marks an extension as `MEDIUM` when:
+
+- It requests moderate permissions such as `storage`, `tabs`, `history`, `downloads`, `bookmarks`, `proxy`, `scripting`, or `clipboardRead` without broad host control.
+- It lists sensitive permissions as optional permissions.
+
+Everything else is marked `LOW`.
+
+These findings are triage signals, not proof of malicious behavior.
+
+## Output Fields
+
+JSON output includes browser, profile, extension ID, name, version, permissions,
+declared permissions, host permissions, content-script matches, optional
+permissions, update URL, last modified timestamp, age in days, risk, risk
+reasons, path, and Firefox legacy status.
+
+## Files
+
+- `browser_bailiff.py`: the scanner CLI
+- `tests/test_browser_bailiff.py`: unit tests for parsing and scoring behavior
+- `CHANGELOG.md`: release history
+- `SECURITY.md`: vulnerability reporting guidance
+- `pyproject.toml`: local package metadata and CLI entry point
+
+## Limitations
 
 The built-in known-malicious extension IDs are sample placeholders. Replace or
 extend them with trusted intelligence before using Browser Bailiff for formal
 enforcement.
 
-Risk scoring is intentionally conservative and transparent. A `HIGH` finding is
-not proof of malicious behavior; it means the extension deserves closer review
-because of sensitive permissions, broad host access, age, legacy format, or a
-sample block-list match.
+- It does not prove whether an extension is malicious.
+- It does not modify browser configuration.
+- It may miss extensions in profiles the current user cannot read.
+- It does not resolve every browser localization edge case.
+- It does not inspect extension source code behavior beyond manifest metadata.
+
+## Validation
+
+The script was checked with:
+
+```bash
+python -m py_compile browser_bailiff.py
+python -m unittest discover -s tests -v
+python browser_bailiff.py --version
+python browser_bailiff.py --browser edge --no-json
+```
