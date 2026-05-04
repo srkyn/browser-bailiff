@@ -1,3 +1,5 @@
+![Browser Bailiff project banner](docs/assets/browser-bailiff-banner.svg)
+
 # Browser Bailiff
 
 Audit browser extensions before quiet permissions become operational risk.
@@ -8,6 +10,10 @@ and Firefox extensions from the command line.
 It extracts manifest metadata, summarizes permissions and host access, flags
 stale or powerful extensions, prints a human-readable docket, and can write JSON
 output for later review.
+
+Browser Bailiff's theme is a permission hearing. Extensions are not presumed
+bad; they are called to the docket, their requested access is read into the
+record, and the operator gets a concise finding for review.
 
 ![Release](https://img.shields.io/github/v/release/srkyn/browser-bailiff?style=flat-square)
 ![CI](https://img.shields.io/github/actions/workflow/status/srkyn/browser-bailiff/ci.yml?branch=main&style=flat-square)
@@ -25,6 +31,17 @@ output for later review.
 - Scores extension risk as `LOW`, `MEDIUM`, or `HIGH` with a finding reason.
 - Sorts the terminal docket by risk and age.
 - Ships with tests, CI, a security policy, and versioned releases.
+
+## The Docket
+
+Browser Bailiff is built around three review questions:
+
+- `What extensions are installed?`
+- `What browser data or sites can they touch?`
+- `Which findings deserve a closer look?`
+
+The wording stays plain on purpose. A `HIGH` finding is not a verdict; it is a
+reason to review the extension's access, age, source, and business need.
 
 ## Why It Exists
 
