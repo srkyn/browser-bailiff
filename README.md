@@ -10,9 +10,10 @@ or powerful extensions, and can write JSON results for later review.
 - Scans Chrome, Edge, and Firefox profiles separately.
 - Reads Chromium `manifest.json` files and Firefox `.xpi` archives.
 - Resolves localized Chromium extension names when possible.
-- Reports permissions, host permissions, update URLs, versions, paths, and age.
+- Reports profile names, permissions, host permissions, content-script matches,
+  optional permissions, update URLs, versions, paths, and age.
 - Scores extension risk as `LOW`, `MEDIUM`, or `HIGH` with a finding reason.
-- Prints a readable terminal docket and optionally writes JSON.
+- Sorts the terminal docket by risk and optionally writes structured JSON.
 
 ## Usage
 
@@ -20,6 +21,7 @@ or powerful extensions, and can write JSON results for later review.
 python .\browser_bailiff.py
 python .\browser_bailiff.py --browser edge --no-json
 python .\browser_bailiff.py --browser firefox --output results.json
+python .\browser_bailiff.py --version
 ```
 
 Supported browser values are `chrome`, `edge`, `firefox`, and `all`.
@@ -29,3 +31,8 @@ Supported browser values are `chrome`, `edge`, `firefox`, and `all`.
 The built-in known-malicious extension IDs are sample placeholders. Replace or
 extend them with trusted intelligence before using Browser Bailiff for formal
 enforcement.
+
+Risk scoring is intentionally conservative and transparent. A `HIGH` finding is
+not proof of malicious behavior; it means the extension deserves closer review
+because of sensitive permissions, broad host access, age, legacy format, or a
+sample block-list match.

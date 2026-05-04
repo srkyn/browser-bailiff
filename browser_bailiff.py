@@ -15,6 +15,8 @@ import time
 import zipfile
 
 
+VERSION = "0.2.0"
+
 # Sample known-malicious extension IDs. Replace or extend this list with real
 # intelligence from your own allow/block lists before using for enforcement.
 KNOWN_MALICIOUS_IDS = {
@@ -27,14 +29,28 @@ KNOWN_MALICIOUS_IDS = {
 HIGH_RISK_PERMISSIONS = {
     "cookies",
     "<all_urls>",
+    "debugger",
     "webRequest",
+    "webRequestBlocking",
     "nativeMessaging",
     "management",
 }
 
 MEDIUM_RISK_PERMISSIONS = {
+    "bookmarks",
+    "clipboardRead",
+    "downloads",
+    "history",
+    "proxy",
+    "scripting",
     "storage",
     "tabs",
+}
+
+RISK_ORDER = {
+    "HIGH": 0,
+    "MEDIUM": 1,
+    "LOW": 2,
 }
 
 BROWSER_PROFILE_ROOTS = {
@@ -82,6 +98,11 @@ def browser_profile_root(browser, os_name):
     return expand_path(path)
 
 
+def profile_name_from_extension_path(path):
+    """Return the browser profile directory name from an Extensions path."""
+    return os.path.basename(os.path.dirname(path)) or "Unknown"
+
+
 def browser_extension_paths(browser, os_name):
     """Return candidate extension directories for a browser on the current OS."""
     root = browser_profile_root(browser, os_name)
@@ -107,8 +128,13 @@ def browser_extension_paths(browser, os_name):
     for pattern in patterns:
         matches = glob.glob(pattern) if "*" in pattern else [pattern]
         for match in matches:
-            if match not in paths:
-                paths.append(match)
+            if match not in [item["path"] for item in paths]:
+                paths.append(
+                    {
+                        "path": match,
+                        "profile": profile_name_from_extension_path(match),
+                    }
+                )
     return paths
 
 
@@ -133,14 +159,21 @@ def read_manifest_from_xpi(path):
 
 def read_locale_messages(extension_path, default_locale):
     """Read Chrome/Edge _locales messages for localized manifest names."""
-    if not default_locale:
-        return {}
+    locale_candidates = []
+    if default_locale:
+        locale_candidates.append(default_locale)
+    locale_candidates.extend(["en_US", "en"])
 
-    locale_path = os.path.join(extension_path, "_locales", default_locale, "messages.json")
-    messages = read_json_file(locale_path)
-    if not isinstance(messages, dict):
-        return {}
-    return messages
+    seen = set()
+    for locale in locale_candidates:
+        if locale in seen:
+            continue
+        seen.add(locale)
+        locale_path = os.path.join(extension_path, "_locales", locale, "messages.json")
+        messages = read_json_file(locale_path)
+        if isinstance(messages, dict):
+            return messages
+    return {}
 
 
 def get_last_modified_info(path):
@@ -171,22 +204,53 @@ def manifest_name(manifest, extension_path=None):
     return str(name)
 
 
-def collect_permissions(manifest):
-    """Return a sorted list of permissions and host permissions from a manifest."""
+def content_script_matches(manifest):
+    """Return host matches declared by content scripts."""
+    matches = []
+    for script in manifest.get("content_scripts") or []:
+        if not isinstance(script, dict):
+            continue
+        for match in script.get("matches") or []:
+            if isinstance(match, str) and match not in matches:
+                matches.append(match)
+    return matches
+
+
+def collect_manifest_access(manifest):
+    """Return permissions, host permissions, content script hosts, and optional permissions."""
     permissions = manifest.get("permissions") or []
     host_permissions = manifest.get("host_permissions") or []
+    optional_permissions = manifest.get("optional_permissions") or []
+    optional_host_permissions = manifest.get("optional_host_permissions") or []
 
     if not isinstance(permissions, list):
         permissions = []
     if not isinstance(host_permissions, list):
         host_permissions = []
+    if not isinstance(optional_permissions, list):
+        optional_permissions = []
+    if not isinstance(optional_host_permissions, list):
+        optional_host_permissions = []
 
     combined = []
-    for permission in permissions + host_permissions:
+    content_hosts = content_script_matches(manifest)
+    optional_combined = []
+
+    for permission in permissions + host_permissions + content_hosts:
         if isinstance(permission, str) and permission not in combined:
             combined.append(permission)
 
-    return sorted(combined)
+    for permission in optional_permissions + optional_host_permissions:
+        if isinstance(permission, str) and permission not in optional_combined:
+            optional_combined.append(permission)
+
+    return {
+        "permissions": sorted(combined),
+        "declared_permissions": sorted([item for item in permissions if isinstance(item, str)]),
+        "host_permissions": sorted([item for item in host_permissions if isinstance(item, str)]),
+        "content_script_matches": sorted(content_hosts),
+        "optional_permissions": sorted(optional_combined),
+    }
 
 
 def manifest_update_url(manifest):
@@ -219,14 +283,17 @@ def is_firefox_legacy(manifest):
 def has_host_control(permissions):
     """Return True if permissions include broad or explicit host access."""
     for permission in permissions:
-        if permission == "<all_urls>" or "://" in permission:
+        if permission == "<all_urls>" or "://" in permission or permission.startswith("*://"):
             return True
     return False
 
 
-def score_risk(extension_id, permissions, last_modified_days, firefox_legacy=False):
+def score_risk(extension_id, access, last_modified_days, firefox_legacy=False):
     """Assign LOW, MEDIUM, or HIGH risk and explain the reasons."""
+    permissions = access["permissions"]
+    optional_permissions = access["optional_permissions"]
     permission_set = set(permissions)
+    optional_permission_set = set(optional_permissions)
     reasons = []
 
     if extension_id in KNOWN_MALICIOUS_IDS:
@@ -245,6 +312,10 @@ def score_risk(extension_id, permissions, last_modified_days, firefox_legacy=Fal
     if reasons:
         return "HIGH", reasons
 
+    optional_sensitive = sorted(optional_permission_set.intersection(HIGH_RISK_PERMISSIONS))
+    if optional_sensitive:
+        return "MEDIUM", ["optional sensitive permission: " + ", ".join(optional_sensitive)]
+
     medium_permissions = sorted(permission_set.intersection(MEDIUM_RISK_PERMISSIONS))
     if medium_permissions and not has_host_control(permissions):
         return "MEDIUM", ["moderate permission: " + ", ".join(medium_permissions)]
@@ -252,19 +323,23 @@ def score_risk(extension_id, permissions, last_modified_days, firefox_legacy=Fal
     return "LOW", ["minimal permissions"]
 
 
-def build_record(browser, extension_id, manifest, target_path, firefox_legacy=False):
+def build_record(browser, profile, extension_id, manifest, target_path, firefox_legacy=False):
     """Create a normalized result record for one extension."""
-    permissions = collect_permissions(manifest)
+    access = collect_manifest_access(manifest)
     last_modified_time, last_modified_days = get_last_modified_info(target_path)
-    risk, risk_reasons = score_risk(extension_id, permissions, last_modified_days, firefox_legacy)
+    risk, risk_reasons = score_risk(extension_id, access, last_modified_days, firefox_legacy)
 
     return {
         "browser": browser.title(),
+        "profile": profile,
         "extension_id": extension_id,
         "name": manifest_name(manifest, target_path),
         "version": str(manifest.get("version", "Unknown")),
-        "permissions": permissions,
-        "host_permissions": manifest.get("host_permissions") or [],
+        "permissions": access["permissions"],
+        "declared_permissions": access["declared_permissions"],
+        "host_permissions": access["host_permissions"],
+        "content_script_matches": access["content_script_matches"],
+        "optional_permissions": access["optional_permissions"],
         "update_url": manifest_update_url(manifest),
         "last_modified_time": last_modified_time,
         "last_modified_days": last_modified_days,
@@ -275,7 +350,15 @@ def build_record(browser, extension_id, manifest, target_path, firefox_legacy=Fa
     }
 
 
-def scan_chromium_browser(browser, extension_root):
+def safe_mtime(path):
+    """Return path modification time, using 0 for inaccessible paths."""
+    try:
+        return os.path.getmtime(path)
+    except OSError:
+        return 0
+
+
+def scan_chromium_browser(browser, extension_root, profile):
     """Scan Chrome or Edge extension directories."""
     results = []
     if not os.path.isdir(extension_root):
@@ -304,18 +387,18 @@ def scan_chromium_browser(browser, extension_root):
             continue
 
         # Most Chromium extensions are stored as ID/version/manifest.json.
-        version_dirs.sort(key=lambda item: os.path.getmtime(item), reverse=True)
+        version_dirs.sort(key=safe_mtime, reverse=True)
         for version_dir in version_dirs:
             manifest_path = os.path.join(version_dir, "manifest.json")
             manifest = read_json_file(manifest_path)
             if manifest:
-                results.append(build_record(browser, extension_id, manifest, version_dir))
+                results.append(build_record(browser, profile, extension_id, manifest, version_dir))
                 break
 
     return results
 
 
-def scan_firefox_browser(extension_root):
+def scan_firefox_browser(extension_root, profile):
     """Scan Firefox .xpi files and extracted extension folders."""
     results = []
     if not os.path.isdir(extension_root):
@@ -344,7 +427,7 @@ def scan_firefox_browser(extension_root):
 
         extension_id = firefox_extension_id(entry, manifest)
         legacy = is_firefox_legacy(manifest)
-        results.append(build_record("firefox", extension_id, manifest, target_path, legacy))
+        results.append(build_record("firefox", profile, extension_id, manifest, target_path, legacy))
 
     return results
 
@@ -354,16 +437,33 @@ def scan_browser(browser, os_name):
     results = []
     errors = []
 
-    for extension_path in browser_extension_paths(browser, os_name):
+    for extension_location in browser_extension_paths(browser, os_name):
+        extension_path = extension_location["path"]
+        profile = extension_location["profile"]
         try:
             if browser in ("chrome", "edge"):
-                results.extend(scan_chromium_browser(browser, extension_path))
+                results.extend(scan_chromium_browser(browser, extension_path, profile))
             elif browser == "firefox":
-                results.extend(scan_firefox_browser(extension_path))
+                results.extend(scan_firefox_browser(extension_path, profile))
         except Exception as exc:  # Keep one broken browser/profile from ending the audit.
-            errors.append({"browser": browser, "path": extension_path, "error": str(exc)})
+            errors.append(
+                {
+                    "browser": browser,
+                    "profile": profile,
+                    "path": extension_path,
+                    "error": str(exc),
+                }
+            )
 
     return results, errors
+
+
+def clipped(value, max_length):
+    """Clip text for stable table output."""
+    value = str(value)
+    if len(value) <= max_length:
+        return value
+    return value[: max_length - 3] + "..."
 
 
 def short_permissions(permissions, max_items=4):
@@ -389,6 +489,7 @@ def print_table(results):
     """Print a human-readable Browser Bailiff docket."""
     headers = [
         "Browser",
+        "Profile",
         "Extension Name",
         "Version",
         "Permissions",
@@ -398,15 +499,25 @@ def print_table(results):
     ]
 
     rows = []
-    for result in results:
+    sorted_results = sorted(
+        results,
+        key=lambda item: (
+            RISK_ORDER.get(item["risk"], 99),
+            -(item["last_modified_days"] or 0),
+            item["browser"],
+            item["name"].lower(),
+        ),
+    )
+    for result in sorted_results:
         days = result["last_modified_days"]
         day_text = "Unknown" if days is None else f"{days} days"
         rows.append(
             [
                 result["browser"],
-                result["name"],
-                result["version"],
-                short_permissions(result["permissions"]),
+                clipped(result["profile"], 18),
+                clipped(result["name"], 34),
+                clipped(result["version"], 14),
+                clipped(short_permissions(result["permissions"]), 64),
                 day_text,
                 result["risk"],
                 short_reason(result.get("risk_reasons", [])),
@@ -467,6 +578,11 @@ def parse_args():
         choices=("chrome", "edge", "firefox", "all"),
         default="all",
         help="Browser to scan. Defaults to all.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"Browser Bailiff {VERSION}",
     )
     return parser.parse_args()
 
