@@ -561,7 +561,7 @@ def write_json_output(path, results, errors):
 def parse_args():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="browser_bailiff.py",
+        prog="browser-bailiff",
         description="Browser Bailiff audits installed Chrome, Edge, and Firefox extensions.",
     )
     parser.add_argument(
