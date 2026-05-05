@@ -19,7 +19,7 @@
   <rect width="1200" height="360" fill="url(#bg)"/>
   <rect x="0" y="0" width="1200" height="360" fill="none" stroke="#385166" stroke-width="2"/>
 
-  <g opacity="0.15" stroke="#d7e6e4" stroke-width="1">
+  <g opacity="0.20" stroke="#d7e6e4" stroke-width="1">
     <path d="M0 82 H1200"/>
     <path d="M0 150 H1200"/>
     <path d="M0 218 H1200"/>
@@ -46,6 +46,6 @@
     <text x="0" y="92" font-family="Segoe UI, Arial, sans-serif" font-size="68" font-weight="850" fill="#f8fbfa">Browser Bailiff</text>
     <rect x="0" y="112" width="510" height="5" fill="url(#accent)"/>
     <text x="0" y="162" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#dde9e8">Extension Permission Auditor</text>
-    <text x="0" y="205" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#c4d4d8">Call browser extensions to order and review their requested access.</text>
+    <text x="0" y="205" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#c4d4d8">Audit browser extensions — permissions, age, and risk.</text>
   </g>
 </svg>

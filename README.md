@@ -2,7 +2,7 @@
 
 # Browser Bailiff
 
-Audit browser extensions before quiet permissions become operational risk.
+Audit browser extensions before their permissions become a problem.
 
 Browser Bailiff is a read-only Python tool for reviewing installed Chrome, Edge,
 and Firefox extensions from the command line.
@@ -11,10 +11,9 @@ It extracts manifest metadata, summarizes permissions and host access, flags
 stale or powerful extensions, prints a human-readable docket, and can write JSON
 output for later review.
 
-Browser Bailiff's theme is a court bailiff: orderly, direct, and focused on the
-record. Extensions are not presumed bad; they are called to the docket, their
-requested access is read aloud, and the operator gets a concise finding for
-review.
+The theme is a court bailiff: orderly, direct, focused on the record. Extensions
+aren't presumed bad — they get a read of their declared access, a risk score,
+and a finding the operator can act on.
 
 ![Release](https://img.shields.io/github/v/release/srkyn/browser-bailiff?style=flat-square)
 ![CI](https://img.shields.io/github/actions/workflow/status/srkyn/browser-bailiff/ci.yml?branch=main&style=flat-square)
@@ -35,24 +34,13 @@ review.
 
 ## The Docket
 
-Browser Bailiff is built around three review questions:
-
-- `What extensions are installed?`
-- `What browser data or sites can they touch?`
-- `Which findings deserve a closer look?`
-
-The wording stays plain on purpose. A `HIGH` finding is not a verdict; it is a
-reason to review the extension's access, age, source, and business need.
+For each extension it finds, Browser Bailiff asks what it can access, how long it's been installed, and whether that access makes sense for its stated purpose. A `HIGH` finding isn't a verdict — it's a reason to look more closely at where the extension came from and what it actually needs.
 
 ## Why It Exists
 
-Browser extensions sit close to sensitive user activity. Some can read or modify
-pages, inspect cookies, communicate with native applications, or manage other
-extensions. Those powers may be legitimate, but they deserve visibility.
+Browser extensions sit close to sensitive user activity. Some can read or modify pages, inspect cookies, communicate with native applications, or manage other extensions. Those capabilities may be legitimate, but they deserve visibility.
 
-Browser Bailiff helps answer:
-
-> Which browser extensions are installed, what can they access, and which ones deserve closer review?
+> Which browser extensions are installed, what can they access, and which ones deserve a closer look?
 
 ## What It Checks
 
@@ -83,21 +71,21 @@ Supported browser values are `chrome`, `edge`, `firefox`, and `all`.
 
 ## Risk Rules
 
-The auditor marks an extension as `HIGH` when:
+`HIGH` when:
 
-- It requests sensitive permissions such as `cookies`, `<all_urls>`, `webRequest`, `nativeMessaging`, `management`, `debugger`, or `webRequestBlocking`.
-- Its extension file or folder appears older than 365 days.
-- It appears to be a legacy Firefox add-on.
-- Its extension ID matches the built-in sample block list.
+- Sensitive permissions declared: `cookies`, `<all_urls>`, `webRequest`, `nativeMessaging`, `management`, `debugger`, or `webRequestBlocking`.
+- Extension file or folder is older than 365 days.
+- Appears to be a legacy Firefox add-on.
+- Extension ID matches the built-in sample block list.
 
-The auditor marks an extension as `MEDIUM` when:
+`MEDIUM` when:
 
-- It requests moderate permissions such as `storage`, `tabs`, `history`, `downloads`, `bookmarks`, `proxy`, `scripting`, or `clipboardRead` without broad host control.
-- It lists sensitive permissions as optional permissions.
+- Moderate permissions without broad host control: `storage`, `tabs`, `history`, `downloads`, `bookmarks`, `proxy`, `scripting`, or `clipboardRead`.
+- Sensitive permissions listed as optional permissions.
 
-Everything else is marked `LOW`.
+Everything else is `LOW`.
 
-These findings are triage signals, not proof of malicious behavior.
+These are triage signals, not proof of malicious behavior.
 
 ## Output Fields
 
@@ -116,19 +104,14 @@ reasons, path, and Firefox legacy status.
 
 ## Limitations
 
-The built-in known-malicious extension IDs are sample placeholders. Replace or
-extend them with trusted intelligence before using Browser Bailiff for formal
-enforcement.
+- The built-in known-malicious extension IDs are sample placeholders. Replace or extend them with real intelligence before using Browser Bailiff for formal enforcement.
+- Does not prove whether an extension is malicious.
+- Does not modify browser configuration.
+- May miss extensions in profiles the current user cannot read.
+- Does not resolve every browser localization edge case.
+- Does not inspect extension source code behavior beyond manifest metadata.
 
-- It does not prove whether an extension is malicious.
-- It does not modify browser configuration.
-- It may miss extensions in profiles the current user cannot read.
-- It does not resolve every browser localization edge case.
-- It does not inspect extension source code behavior beyond manifest metadata.
-
-## Validation
-
-The script was checked with:
+## Testing
 
 ```bash
 python -m py_compile browser_bailiff.py
