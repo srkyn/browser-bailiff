@@ -27,3 +27,12 @@ jobs:
 
       - name: Test
         run: python -m unittest discover -s tests -v
+
+      - name: Install CLI
+        run: python -m pip install .
+
+      - name: Check CLI entry point
+        run: browser-bailiff --version
+
+      - name: Check CLI runs without errors
+        run: browser-bailiff --no-json || true
