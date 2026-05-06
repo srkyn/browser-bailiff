@@ -561,20 +561,20 @@ def write_json_output(path, results, errors):
 def parse_args():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="browser_bailiff.py",
+        prog="bb",
         description="Browser Bailiff audits installed Chrome, Edge, and Firefox extensions.",
     )
     parser.add_argument(
-        "--output",
+        "-o", "--output",
         help="Write JSON audit results to this file.",
     )
     parser.add_argument(
-        "--no-json",
+        "-n", "--no-json",
         action="store_true",
         help="Disable JSON output even when --output is supplied.",
     )
     parser.add_argument(
-        "--browser",
+        "-b", "--browser",
         choices=("chrome", "edge", "firefox", "all"),
         default="all",
         help="Browser to scan. Defaults to all.",

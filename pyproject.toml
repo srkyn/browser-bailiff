@@ -36,6 +36,7 @@ classifiers = [
 ]
 
 [project.scripts]
+bb = "browser_bailiff:main"
 browser-bailiff = "browser_bailiff:main"
 
 [tool.setuptools]
