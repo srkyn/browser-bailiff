@@ -17,7 +17,7 @@ import zipfile
 
 VERSION = "0.2.1"
 
-# Sample known-malicious extension IDs. Replace or extend this list with real
+# Demonstration block-list entries. Replace or extend this set with trusted
 # intelligence from your own allow/block lists before using for enforcement.
 KNOWN_MALICIOUS_IDS = {
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

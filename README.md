@@ -135,9 +135,9 @@ reasons, path, and Firefox legacy status.
 
 ## Limitations
 
-The built-in known-malicious extension IDs are sample placeholders. Replace or
-extend them with trusted intelligence before using Browser Bailiff for formal
-enforcement.
+The built-in block list is intentionally small and demonstrative. Connect it
+to trusted intelligence or an organization-approved allow/block list before
+using Browser Bailiff for formal enforcement.
 
 - It does not prove whether an extension is malicious.
 - It does not modify browser configuration.
