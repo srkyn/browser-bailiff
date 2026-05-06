@@ -72,14 +72,33 @@ On Firefox:
 
 ## Usage
 
-```powershell
-python .\browser_bailiff.py
-python .\browser_bailiff.py --browser edge --no-json
-python .\browser_bailiff.py --browser firefox --output results.json
-python .\browser_bailiff.py --version
+Install from a clone:
+
+```bash
+git clone https://github.com/srkyn/browser-bailiff.git
+cd browser-bailiff
+pip install .
+```
+
+Run a scan:
+
+```bash
+bb                          # short alias
+browser-bailiff             # full name
+bb -b edge                  # scan Edge only
+bb -b firefox -o results.json
+bb --version
 ```
 
 Supported browser values are `chrome`, `edge`, `firefox`, and `all`.
+
+## Short Flags
+
+| Short | Long | Description |
+|---|---|---|
+| `-b BROWSER` | `--browser BROWSER` | Browser to scan (default: `all`) |
+| `-o FILE` | `--output FILE` | Write JSON results to FILE |
+| `-n` | `--no-json` | Disable JSON output |
 
 ## Risk Rules
 
@@ -128,11 +147,9 @@ enforcement.
 
 ## Validation
 
-The script was checked with:
-
 ```bash
 python -m py_compile browser_bailiff.py
 python -m unittest discover -s tests -v
-python browser_bailiff.py --version
-python browser_bailiff.py --browser edge --no-json
+bb --version
+bb --browser edge --no-json
 ```
