@@ -44,6 +44,17 @@ Browser Bailiff is built around three review questions:
 The wording stays plain on purpose. A `HIGH` finding is not a verdict; it is a
 reason to review the extension's access, age, source, and business need.
 
+## Review Flow
+
+```mermaid
+flowchart LR
+    Profiles["Browser profiles<br/>Chrome, Edge, Firefox"] --> Manifests["Manifest review<br/>permissions, hosts, content scripts, update URL"]
+    Manifests --> Context["Context checks<br/>age, browser, profile, extension ID"]
+    Context --> Risk["Risk label<br/>LOW, MEDIUM, HIGH"]
+    Risk --> Docket["Terminal docket<br/>sorted by risk and age"]
+    Docket --> Analyst["Analyst decision<br/>approve, investigate, remove outside the tool"]
+```
+
 ## Why It Exists
 
 Browser extensions sit close to sensitive user activity. Some can read or modify
