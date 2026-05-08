@@ -8,7 +8,7 @@ Browser Bailiff is a read-only Python tool for reviewing installed Chrome, Edge,
 and Firefox extensions from the command line.
 
 It extracts manifest metadata, summarizes permissions and host access, flags
-stale or powerful extensions, prints a human-readable audit table, and can write
+stale or broad-access extensions, prints a human-readable audit table, and can write
 JSON output for later review.
 
 The name is shorthand for orderly review. Extensions are not assumed to be bad;
@@ -152,9 +152,9 @@ reasons, path, and Firefox legacy status.
 
 ## Limitations
 
-The built-in block list is intentionally small and demonstrative. Connect it
-to trusted intelligence or an organization-approved allow/block list before
-using Browser Bailiff for formal enforcement.
+The built-in block list is a sample only. Connect it to trusted intelligence or
+an organization-approved allow/block list before using Browser Bailiff for
+formal enforcement.
 
 - It does not prove whether an extension is malicious.
 - It does not modify browser configuration.
