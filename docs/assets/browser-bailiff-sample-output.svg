@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="420" viewBox="0 0 1180 420" role="img" aria-labelledby="title desc">
+  <title id="title">Sanitized Browser Bailiff terminal output</title>
+  <desc id="desc">Example Browser Bailiff audit output showing browser extension risk findings.</desc>
+  <rect width="1180" height="420" rx="10" fill="#0f1720"/>
+  <rect x="0" y="0" width="1180" height="34" rx="10" fill="#182331"/>
+  <circle cx="22" cy="17" r="6" fill="#e06c75"/>
+  <circle cx="44" cy="17" r="6" fill="#e5c07b"/>
+  <circle cx="66" cy="17" r="6" fill="#98c379"/>
+  <text x="92" y="22" font-family="Consolas, monospace" font-size="13" fill="#b7c0cc">bb --browser all --output browser-bailiff-results.json</text>
+
+  <g font-family="Consolas, monospace" font-size="15" fill="#d6deeb">
+    <text x="28" y="66">Browser Bailiff extension audit</text>
+    <text x="28" y="98">Browser  Profile  Extension Name          Version   Permissions                         Last Updated  Risk    Finding</text>
+    <text x="28" y="120">-------  -------  ----------------------  --------  ----------------------------------  ------------  ------  -----------------------------------</text>
+    <text x="28" y="152" fill="#f8d49b">Chrome   Default  Example Request Watch   4.8.1     &lt;all_urls&gt;, cookies, webRequest...  42 days       HIGH    sensitive permission: &lt;all_urls&gt;...</text>
+    <text x="28" y="184" fill="#f8d49b">Edge     Work     Legacy PDF Helper       1.1.0     tabs, storage                       611 days      HIGH    not updated in over 365 days</text>
+    <text x="28" y="216" fill="#ffd580">Firefox  default  Session Notes           2.0.3     storage, tabs                       88 days       MEDIUM  moderate permission: storage, tabs</text>
+    <text x="28" y="248" fill="#a7e3b4">Chrome   Default  JSON Formatter          3.2.0     storage                             12 days       LOW     minimal permissions</text>
+    <text x="28" y="280" fill="#a7e3b4">Edge     Default  Docs Offline            1.104.1   storage, https://docs.example/*     21 days       LOW     minimal permissions</text>
+    <text x="28" y="328" fill="#8fa2b7">JSON results written to: browser-bailiff-results.json</text>
+    <text x="28" y="368" fill="#8fa2b7">Sanitized sample. Findings are review signals, not proof of malicious behavior.</text>
+  </g>
+</svg>

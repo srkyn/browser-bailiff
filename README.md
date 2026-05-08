@@ -20,6 +20,12 @@ findings to review.
 ![Python](https://img.shields.io/badge/python-3.8%2B-1f6feb?style=flat-square)
 ![License](https://img.shields.io/github/license/srkyn/browser-bailiff?style=flat-square)
 
+## Demo
+
+![Sanitized Browser Bailiff terminal output](docs/assets/browser-bailiff-sample-output.svg)
+
+More context is available in [docs/demo.md](docs/demo.md).
+
 ## At A Glance
 
 - Read-only audit tool; it does not install, disable, or delete extensions.
@@ -138,6 +144,7 @@ reasons, path, and Firefox legacy status.
 ## Files
 
 - `browser_bailiff.py`: the scanner CLI
+- `docs/demo.md`: sanitized example output and interpretation
 - `tests/test_browser_bailiff.py`: unit tests for parsing and scoring behavior
 - `CHANGELOG.md`: release history
 - `SECURITY.md`: vulnerability reporting guidance
