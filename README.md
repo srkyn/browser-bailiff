@@ -8,13 +8,12 @@ Browser Bailiff is a read-only Python tool for reviewing installed Chrome, Edge,
 and Firefox extensions from the command line.
 
 It extracts manifest metadata, summarizes permissions and host access, flags
-stale or powerful extensions, prints a human-readable docket, and can write JSON
-output for later review.
+stale or powerful extensions, prints a human-readable audit table, and can write
+JSON output for later review.
 
-Browser Bailiff's theme is a court bailiff: orderly, direct, and focused on the
-record. Extensions are not presumed bad; they are called to the docket, their
-requested access is read aloud, and the operator gets a concise finding for
-review.
+The name is shorthand for orderly review. Extensions are not assumed to be bad;
+Browser Bailiff records their requested access and gives the operator concise
+findings to review.
 
 ![Release](https://img.shields.io/github/v/release/srkyn/browser-bailiff?style=flat-square)
 ![CI](https://img.shields.io/github/actions/workflow/status/srkyn/browser-bailiff/ci.yml?branch=main&style=flat-square)
@@ -30,10 +29,10 @@ review.
 - Reports browser profile, extension ID, version, permissions, host access, update URL, path, and age.
 - Includes content-script host matches and optional permissions in the JSON output.
 - Scores extension risk as `LOW`, `MEDIUM`, or `HIGH` with a finding reason.
-- Sorts the terminal docket by risk and age.
+- Sorts terminal output by risk and age.
 - Ships with tests, CI, a security policy, and versioned releases.
 
-## The Docket
+## Review Questions
 
 Browser Bailiff is built around three review questions:
 
@@ -51,8 +50,8 @@ flowchart LR
     Profiles["Browser profiles<br/>Chrome, Edge, Firefox"] --> Manifests["Manifest review<br/>permissions, hosts, content scripts, update URL"]
     Manifests --> Context["Context checks<br/>age, browser, profile, extension ID"]
     Context --> Risk["Risk label<br/>LOW, MEDIUM, HIGH"]
-    Risk --> Docket["Terminal docket<br/>sorted by risk and age"]
-    Docket --> Analyst["Analyst decision<br/>approve, investigate, remove outside the tool"]
+    Risk --> Output["Terminal output<br/>sorted by risk and age"]
+    Output --> Analyst["Analyst decision<br/>approve, investigate, remove outside the tool"]
 ```
 
 ## Why It Exists

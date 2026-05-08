@@ -486,7 +486,7 @@ def short_reason(reasons, max_length=38):
 
 
 def print_table(results):
-    """Print a human-readable Browser Bailiff docket."""
+    """Print a human-readable Browser Bailiff audit table."""
     headers = [
         "Browser",
         "Profile",
@@ -532,7 +532,7 @@ def print_table(results):
     header_line = " | ".join(headers[index].ljust(widths[index]) for index in range(len(headers)))
     separator = "-+-".join("-" * width for width in widths)
 
-    print("Browser Bailiff extension docket")
+    print("Browser Bailiff extension audit")
     print(header_line)
     print(separator)
     if not rows:
