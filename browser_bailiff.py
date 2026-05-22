@@ -19,11 +19,11 @@ VERSION = "0.2.1"
 
 # Demonstration block-list entries. Replace or extend this set with trusted
 # intelligence from your own allow/block lists before using for enforcement.
-KNOWN_MALICIOUS_IDS = {
+SAMPLE_BLOCKLIST_IDS = {
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "cccccccccccccccccccccccccccccccc",
-    "malicious-sample@example.com",
+    "blocked-sample@example.com",
 }
 
 HIGH_RISK_PERMISSIONS = {
@@ -296,8 +296,8 @@ def score_risk(extension_id, access, last_modified_days, firefox_legacy=False):
     optional_permission_set = set(optional_permissions)
     reasons = []
 
-    if extension_id in KNOWN_MALICIOUS_IDS:
-        reasons.append("known malicious sample ID")
+    if extension_id in SAMPLE_BLOCKLIST_IDS:
+        reasons.append("sample block list match")
 
     risky_permissions = sorted(permission_set.intersection(HIGH_RISK_PERMISSIONS))
     if risky_permissions:
