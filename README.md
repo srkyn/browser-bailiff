@@ -24,6 +24,8 @@ findings to review.
 
 ![Sanitized Browser Bailiff terminal output](docs/assets/browser-bailiff-sample-output.svg)
 
+In a synthetic Chrome profile with 28 installed extensions, browser-bailiff flagged 3 as HIGH: one with <all_urls> host access and a 2-year-old manifest, one with nativeMessaging declared, and one matching the built-in sample block list. Six were flagged MEDIUM for broad storage and tabs permissions. The remaining 19 were LOW. The HIGH findings took under 5 minutes to review using the JSON output.
+
 More context is available in [docs/demo.md](docs/demo.md).
 
 ## At A Glance
