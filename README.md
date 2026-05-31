@@ -2,18 +2,18 @@
 
 # Browser Bailiff
 
-Audit browser extensions before quiet permissions become operational risk.
+Audit browser extensions before quiet permissions become tomorrow's weird security question.
 
 Browser Bailiff is a read-only Python tool for reviewing installed Chrome, Edge,
-and Firefox extensions from the command line.
+and Firefox extensions from the command line without changing the browser profile.
 
 It extracts manifest metadata, summarizes permissions and host access, flags
 stale or broad-access extensions, prints a human-readable audit table, and can write
 JSON output for later review.
 
-The name is shorthand for orderly review. Extensions are not assumed to be bad;
-Browser Bailiff records their requested access and gives the operator concise
-findings to review.
+The name is shorthand for orderly review. Extensions are not assumed to be bad.
+Browser Bailiff records what access they ask for and gives the operator concise
+findings worth checking.
 
 ![Release](https://img.shields.io/github/v/release/srkyn/browser-bailiff?style=flat-square)
 ![CI](https://img.shields.io/github/actions/workflow/status/srkyn/browser-bailiff/ci.yml?branch=main&style=flat-square)
