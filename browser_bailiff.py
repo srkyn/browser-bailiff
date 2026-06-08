@@ -16,6 +16,7 @@ import zipfile
 
 
 VERSION = "0.2.1"
+MAX_XPI_MANIFEST_BYTES = 1_048_576
 
 # Demonstration block-list entries. Replace or extend this set with trusted
 # intelligence from your own allow/block lists before using for enforcement.
@@ -151,7 +152,10 @@ def read_manifest_from_xpi(path):
     """Read manifest.json from a Firefox .xpi archive."""
     try:
         with zipfile.ZipFile(path, "r") as archive:
-            with archive.open("manifest.json") as manifest_file:
+            info = archive.getinfo("manifest.json")
+            if info.file_size > MAX_XPI_MANIFEST_BYTES:
+                return None
+            with archive.open(info) as manifest_file:
                 return json.loads(manifest_file.read().decode("utf-8"))
     except (OSError, KeyError, zipfile.BadZipFile, json.JSONDecodeError, UnicodeDecodeError):
         return None

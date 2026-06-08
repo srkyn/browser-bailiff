@@ -86,6 +86,17 @@ class BrowserBailiffTests(unittest.TestCase):
 
         self.assertEqual(loaded["name"], "Firefox Test")
 
+    def test_firefox_xpi_manifest_size_is_capped(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            xpi_path = os.path.join(temp_dir, "oversized.xpi")
+            oversized = " " * (browser_bailiff.MAX_XPI_MANIFEST_BYTES + 1)
+            with zipfile.ZipFile(xpi_path, "w") as archive:
+                archive.writestr("manifest.json", oversized)
+
+            loaded = browser_bailiff.read_manifest_from_xpi(xpi_path)
+
+        self.assertIsNone(loaded)
+
 
 if __name__ == "__main__":
     unittest.main()
